@@ -1,5 +1,4 @@
-About Screenplain
-=================
+# About Screenplain
 
 You're a hacker. The command line is your home. You know tools like grep, sed
 and Git inside out. You have formed a symbiotic relationship with your text
@@ -32,8 +31,7 @@ the master branch may not always work. I'm currently working on supporting
 the whole [Fountain](http://fountain.io) specification. (Fountain
 was previously known as "Screenplay Markdown" or "SPMD.")
 
-Installing
-==========
+## Installing
 
     pip install screenplain
 
@@ -41,8 +39,7 @@ To enable PDF output, install with the PDF extra (installs ReportLab):
 
     pip install 'screenplain[PDF]'
 
-Credits
-=======
+## Credits
 
 Screenplain was coded by [Martin Vilcans](http://www.librador.com).
 
@@ -55,14 +52,12 @@ collaboration between [Stu Maschwitz](http://prolost.com) and
 [John August](http://johnaugust.com/).
 
 
-License
-=======
+## License
 
 Screenplain is released under the [MIT license](http://www.opensource.org/licenses/mit-license.php).
 
 
-Developing
-==========
+## Developing
 
 Set up virtual environment:
 
@@ -76,3 +71,90 @@ After this, the `screenplain` command will use the working copy of your code.
 To run unit tests and style checks, run:
 
     bin/test
+
+## TODO
+
+This library is a WIP and does not currently support the entire fountain spec.
+
+Note that this spec is written in such a way to be a simplified spec of what fountain itself entails.
+This is to ease with implementation and testing.
+
+### Parser
+
+#### Fountain v1.0
+
+- [ ] SCENE HEADINGS
+  - [ ] Scene headings with INT., EXT., I., or E.
+  - [ ] Scene headings forced with a single `.` followed by an alphanumeric character
+- [ ] ACTION
+  - [ ] All default text, that doesn't meet critera for ANY other element
+  - [ ] Forced with `!`
+  - [ ] leading spaces and tabs are preserved
+  - [ ] Preserve vertical whitespace
+- [ ] CHARACTERS
+  - [ ] a line entirely in upperspace, with one empty line before, and no empty line after
+  - [ ] Can be indented, will be cut from output
+  - [ ] “Character Extensions”–the parenthetical notations that follow a character name on the same line–may be in uppercase or lowercase:
+  - [ ] must include one alphabetical character
+  - [ ] can be forced with preceding `@`
+- [ ] DIALOGUE
+  - [ ] any text immediately following a character OR parenthetical element
+- [ ] PARENTHETICALS
+  - [ ] Parentheticals follow a Character or Dialogue element, and are wrapped in parentheses ().
+- [ ] DUAL DIALOGUE
+  - [ ] Dual, or simultaneous, dialogue is expressed by adding a caret ^ after the second Character element.
+  - [ ] Any number of spaces between the Character name and the caret are acceptable, and will be ignored. All that matters is that the caret is the last character on the line.
+- [ ] LYRICS
+  - [ ] Always forced
+  - [ ] any line starting with `~`.
+  - [ ] Not specific on whether this can be dialogue only...
+- [ ] TRANSITIONS
+  - [ ] Uppercase
+  - [ ] Preceded by and followed by an empty line
+  - [ ] Ending in TO:
+  - [ ] forced with: `>`
+  - [ ] mustn't have trailing whitespace
+- [ ] CENTERED TEXT
+  - [ ] Action text, but centered
+  - [ ] forced with `>text<`.
+  - [ ] leading spaces NOT preserved
+- [ ] EMPHASIS
+  - [ ] <https://fountain.io/syntax/#emphasis>
+- [ ] TITLE PAGE
+  - [ ] The optional Title Page is always the first thing in a Fountain document. Information is encoding in the format key: value. Keys can have spaces (e. g. Draft date), but must end with a colon.
+  - [ ] basically, email header rules but with spaces in the key names too.
+- [ ] PAGE BREAKS
+  - [ ] `===`
+- [ ] PUNCTUATION
+  - [ ] two spaces on a blank line continues the dialogue if it was preceeding.
+  - [ ] Leading tabs or spaces in elements other than Action will be ignored
+- [ ] NOTES
+  - [ ] Wrapped with `[[text]]`
+  - [ ] Notes can contain carriage returns, but if you wish a note to contain an empty line, you must place two spaces there to “connect” the element into one.
+  - [ ] do not appear in formatted output
+- [ ] BONEYARD
+  - [ ] Comments. `/* */`
+  - [ ] do not appear in formatted output
+- [ ] SECTIONS AND SYNOPSES
+  - [ ] Create a Section by preceding a line with one or more pound-sign # characters:
+  - [ ] do not appear in formatted output.
+    - [ ] optional support to include
+  - [ ] Synopses are single lines prefixed by an equals sign =. They can be located anywhere within the screenplay.
+- [ ] ERROR HANDLING
+  - [ ] MOST IMPORTANT
+  - [ ] Fountain does its best to sensibly interpret the text file into screenplay formatting. When in doubt, Fountain returns text as Action. Better to show the writer what they wrote–in the wrong format–than skip over malformed text.
+  - [ ] double line breaks reset the entire rendering engine. Exception may lie with two-spaced dialogue line.
+
+#### Fountain v1.1
+
+- [ ] A Character element can by forced by preceding it by an “at” symbol @.
+- [ ] An Action element can by forced by preceding it by an exclamation point !.
+- [ ] Lyrics are designated by a preceding tilde ~ on each line.
+- [ ] “Character Extensions”–the parenthetical notations that follow a character name on the same line–are no longer required to be uppercase.
+- [ ] Two trailing spaces no longer forces an Action line.
+
+## Future Plans
+
+- [ ] Support for outputting formatted theatrical stage plays using the same syntax of Fountain.
+- [ ] Optional Character/Location output and summaries.
+- [ ] cheat-sheet synopses and note outputs. 
