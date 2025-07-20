@@ -3,9 +3,12 @@
 # http://www.opensource.org/licenses/mit-license.php
 
 import sys
+import os
 
 from reportlab import platypus
 from reportlab.lib import pagesizes
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.lib.enums import TA_CENTER, TA_RIGHT
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import inch
@@ -27,6 +30,32 @@ except ImportError:
     sys.stderr.write('ERROR: ReportLab is required for PDF output\n')
     raise
 del reportlab
+
+# Register Courier Prime font family if available
+COURIER_PRIME_PATH = os.path.join(os.path.dirname(__file__), "fonts")
+COURIER_PRIME_FONTS = {
+    "CourierPrime": "CourierPrime-Regular.ttf",
+    "CourierPrime-Bold": "CourierPrime-Bold.ttf",
+    "CourierPrime-Oblique": "CourierPrime-Italic.ttf",
+    "CourierPrime-BoldOblique": "CourierPrime-BoldItalic.ttf",
+}
+
+try:
+    for font_name, file_name in COURIER_PRIME_FONTS.items():
+        font_path = os.path.join(COURIER_PRIME_PATH, file_name)
+        if os.path.isfile(font_path):
+            pdfmetrics.registerFont(TTFont(font_name, font_path))
+    # Register font family if all variants are present
+    if all(os.path.isfile(os.path.join(COURIER_PRIME_PATH, fn)) for fn in COURIER_PRIME_FONTS.values()):
+        pdfmetrics.registerFontFamily(
+            "CourierPrime",
+            normal="CourierPrime",
+            bold="CourierPrime-Bold",
+            italic="CourierPrime-Oblique",
+            boldItalic="CourierPrime-BoldOblique",
+        )
+except Exception as e:
+    sys.stderr.write(f"WARNING: Could not register Courier Prime font family: {e}\n")
 
 
 def create_default_settings(**kwargs):
