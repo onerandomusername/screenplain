@@ -42,6 +42,7 @@ class Settings:
     character_style: ParagraphStyle
     dialog_style: ParagraphStyle
     parenthentical_style: ParagraphStyle
+    lyric_style: ParagraphStyle
     action_style: ParagraphStyle
     centered_action_style: ParagraphStyle
     slug_style: ParagraphStyle
@@ -135,6 +136,7 @@ class Settings:
             'lyric', default_style,
             leftIndent=9 * self.character_width,
             rightIndent=self.frame_width - (45 * self.character_width),
+            fontName=default_style.fontName + "-Oblique",
         )
         self.action_style = ParagraphStyle(
             'action', default_style,
@@ -235,22 +237,14 @@ def add_dialog(story, dialog, settings: Settings):
     story.append(
         Paragraph(dialog.character.to_html(), settings.character_style)
     )
+    styles = {
+        DialogType.DEFAULT: settings.dialog_style,
+        DialogType.PARENTHETICAL: settings.parenthentical_style,
+        DialogType.LYRIC: settings.lyric_style,
+    }
     for dialog_type, line in dialog.blocks:
-        if dialog_type is DialogType.PARENTHETICAL:
-            story.append(
-                Paragraph(line.to_html(), settings.parenthentical_style)
-            )
-        elif dialog_type is DialogType.LYRIC:
-            story.append(
-                Paragraph(
-                    "<i>" + line.to_html() + "</i>",
-                    settings.lyric_style
-                )
-            )
-        else:
-            story.append(
-                Paragraph(line.to_html(), settings.dialog_style)
-            )
+        style = styles[dialog_type]
+        story.append(Paragraph(line.to_html(), style))
 
 
 def add_dual_dialog(story, dual, settings: Settings):
