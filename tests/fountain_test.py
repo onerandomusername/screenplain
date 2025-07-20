@@ -3,6 +3,7 @@
 # http://www.opensource.org/licenses/mit-license.php
 
 from unittest import TestCase
+from parameterized import parameterized, param
 
 from screenplain.parsers import fountain
 from screenplain.types import (
@@ -18,13 +19,25 @@ def parse(lines):
 
 
 class SlugTests(TestCase):
-    def test_slug_with_prefix(self):
-        paras = parse([
-            'INT. SOMEWHERE - DAY',
-            '',
-            'THIS IS JUST ACTION',
-        ])
-        self.assertEqual([Slug, Action], [type(p) for p in paras])
+    @parameterized.expand([
+        "INT",
+        "EXT",
+        "EST",
+        "INT./EXT",
+        "INT/EXT",
+        "I/E",
+    ])
+    def test_slug_with_prefix(self, slug):
+        addendum = 'SOMEWHERE - DAY'
+        for char in " .":
+            if char != ' ':
+                addendum = ' ' + addendum
+            paras = parse([
+                slug + char + addendum,
+                '',
+                'THIS IS JUST ACTION',
+            ])
+            self.assertEqual([Slug, Action], [type(p) for p in paras])
 
     def test_slug_must_be_single_line(self):
         paras = parse([
@@ -34,7 +47,7 @@ class SlugTests(TestCase):
             'Some action',
         ])
         self.assertEqual([Dialog, Action], [type(p) for p in paras])
-        # What looks like a scene headingis parsed as a character name.
+        # What looks like a scene heading is parsed as a character name.
         # Unexpected perhaps, but that's how I interpreted the spec.
         self.assertEqual(plain('INT. SOMEWHERE - DAY'), paras[0].character)
         self.assertEqual([plain('Some action')], paras[1].lines)
@@ -58,7 +71,7 @@ class SlugTests(TestCase):
 
     def test_period_creates_slug(self):
         paras = parse([
-            '.SNIPER SCOPE POV',
+            '.SNIPER SCOPE Pov',
             '',
         ])
         self.assertEqual(1, len(paras))
@@ -126,7 +139,7 @@ class SectionTests(TestCase):
     def test_multiple_sections_with_synopsis(self):
         paras = parse([
             '# first level',
-            '= level one synopsis',
+            '  = level one synopsis',
             '## second level',
         ])
         self.assertEqual([
@@ -134,6 +147,15 @@ class SectionTests(TestCase):
             Section(plain(u'second level'), 2, None),
         ], paras)
 
+
+    def test_indented_synopsis(self):
+        paras = parse([
+            '# first level',
+            '  =   indented synopsis',
+        ])
+        self.assertEqual([
+            Section(plain(u'first level'), 1, 'indented synopsis'),
+        ], paras)
 
 class DialogTests(TestCase):
     # A Character element is any line entirely in caps, with one empty
@@ -176,6 +198,14 @@ class DialogTests(TestCase):
         self.assertEqual([Dialog], [type(p) for p in paras])
         self.assertEqual(plain('McCLANE'), paras[0].character)
 
+    def test_at_sign_forces_dialog_for_non_alphabetical(self):
+        paras = parse([
+            '@42',
+            'Yippee ki-yay',
+        ])
+        self.assertEqual([Dialog], [type(p) for p in paras])
+        self.assertEqual(plain('42'), paras[0].character)
+
     def test_twospaced_line_is_not_character(self):
         paras = parse([
             'SCANNING THE AISLES...  ',
@@ -183,44 +213,62 @@ class DialogTests(TestCase):
         ])
         self.assertEqual([Action], [type(p) for p in paras])
 
-    def test_simple_parenthetical(self):
+    @parameterized.expand([
+        param('STEEL', '(staring the engine)', 'So much for retirement!'),
+        param('     STEEL ',
+              '     (staring the engine)',
+              '        So much for retirement!'
+              ),
+    ])
+    def test_simple_parenthetical(self, character, parenthetical, dialogue):
         paras = parse([
-            'STEEL',
-            '(starting the engine)',
-            'So much for retirement!',
+            character,
+            parenthetical,
+            dialogue,
         ])
         self.assertEqual(1, len(paras))
         dialog = paras[0]
         self.assertEqual(2, len(dialog.blocks))
         self.assertEqual(
-            (True, plain('(starting the engine)')),
+            (True, plain(parenthetical.lstrip())),
             dialog.blocks[0]
         )
         self.assertEqual(
-            (False, plain('So much for retirement!')),
+            (False, plain(dialogue.lstrip())),
             dialog.blocks[1]
         )
 
-    def test_twospace_keeps_dialog_together(self):
+    @parameterized.expand([
+        "STEEL (V.O.)",
+        "JAKE (on the phone)",
+        "@monty (V.O.)",
+        "R2D2 (beeping)",
+    ])
+    def test_character_extensions(self, character):
         paras = parse([
-            'SOMEONE',
-            'One',
-            '  ',
-            'Two',
+            character,
+            'So we meet again.'
         ])
         self.assertEqual([Dialog], [type(p) for p in paras])
-        self.assertEqual([
-            (False, plain('One')),
-            (False, empty_string),
-            (False, plain('Two')),
-        ], paras[0].blocks)
+        self.assertEqual(
+            [(False, plain('So we meet again.'))],
+            paras[0].blocks
+        )
 
-    def test_dual_dialog(self):
+    @parameterized.expand([
+        param("STEEL ^", "STEEL"),
+        param("STEEL^", 'STEEL'),
+        param("@STEEL     ^", 'STEEL'),
+        param("STEEL (V.O.) ^", 'STEEL (V.O.)'),
+        param("@STEEL (V.O.) ^", 'STEEL (V.O.)'),
+        param("@steel (v.o.) ^", 'steel (v.o.)'),
+    ])
+    def test_dual_dialog(self, character, expected_character):
         paras = parse([
             'BRICK',
             'Fuck retirement.',
             '',
-            'STEEL ^',
+            character,
             'Fuck retirement!',
         ])
         self.assertEqual([DualDialog], [type(p) for p in paras])
@@ -230,7 +278,7 @@ class DialogTests(TestCase):
             [(False, plain('Fuck retirement.'))],
             dual.left.blocks
         )
-        self.assertEqual(plain('STEEL'), dual.right.character)
+        self.assertEqual(plain(expected_character), dual.right.character)
         self.assertEqual(
             [(False, plain('Fuck retirement!'))],
             dual.right.blocks
@@ -266,6 +314,18 @@ class DialogTests(TestCase):
             (False, plain(u"And I'll no longer be a Capulet.")),
         ], paras[0].blocks)
 
+    def test_two_space_blanks(self):
+        paras = parse([
+            "MARTHA",
+            'So we meet again.'
+            "  ",
+            "And it looks like you brought company.",
+        ])
+        self.assertEqual([Dialog], [type(p) for p in paras])
+        self.assertEqual(
+            [(False, plain('So we meet again.')), (False, plain('And it looks like you brought company.'))],
+            paras[0].blocks
+        )
 
 class TransitionTests(TestCase):
 
@@ -332,6 +392,26 @@ class TransitionTests(TestCase):
         self.assertEqual([Action, Transition, Slug], [type(p) for p in paras])
         self.assertEqual(plain('FADE OUT.'), paras[1].line)
 
+    def test_forced_transition_with_lowercase(self):
+        paras = parse([
+            'Jack begins to argue vociferously in Vietnamese (?)',
+            '',
+            '> cut to:',
+            '',
+            "EXT. BRICK'S POOL - DAY",
+        ])
+        self.assertEqual([Action, Transition, Slug], [type(p) for p in paras])
+
+    def test_forced_transition_leading_whitespace_with_gt(self):
+        paras = parse([
+            'Jack begins to argue vociferously in Vietnamese (?)',
+            '',
+            ' > cut to:',
+            '',
+            "EXT. BRICK'S POOL - DAY",
+        ])
+        self.assertEqual([Action, Transition, Slug], [type(p) for p in paras])
+
     def test_centered_text_is_not_parsed_as_transition(self):
         paras = parse([
             'Bill blows out the match.',
@@ -341,6 +421,17 @@ class TransitionTests(TestCase):
             'bye!'
         ])
         self.assertEqual([Action, Action, Action], [type(p) for p in paras])
+
+    def test_transition_must_be_solo(self):
+        paras = parse([
+            'Bill lights a cigarette.',
+            '>CUT TO:',
+            'SOME GUY mowing the lawn.',
+        ])
+        self.assertEqual(
+            [Action],
+            [type(p) for p in paras]
+        )
 
     def test_transition_at_end(self):
         paras = parse([
@@ -374,6 +465,18 @@ class ActionTests(TestCase):
         self.assertEqual([Action], [type(p) for p in paras])
         self.assertTrue(paras[0].centered)
 
+    def test_centered_is_not_transition(self):
+        paras = parse([
+            'Bill blows out the match.',
+            '',
+            '> CUT TO: <',
+            '',
+            'bye!'
+        ])
+        self.assertEqual([Action, Action, Action], [type(p) for p in paras])
+        self.assertTrue(paras[1].centered)
+        self.assertEqual([plain('CUT TO:')], paras[1].lines)
+
     def test_full_centered_paragraph(self):
         lines = [
             '> first! <',
@@ -388,6 +491,19 @@ class ActionTests(TestCase):
             plain('second!'),
             plain('third!'),
         ], paras[0].lines)
+
+    def test_action_forced_with_exclamation(self):
+        paras = parse([
+            '!SCANNING THE AISLES...',
+            'Where is that pit boss?',
+        ])
+        self.assertEqual([Action], [type(p) for p in paras])
+        self.assertEqual(
+            [
+                plain('SCANNING THE AISLES...'),
+                plain('Where is that pit boss?'),
+            ], paras[0].lines
+        )
 
     def test_upper_case_centered_not_parsed_as_dialog(self):
         paras = parse([
@@ -501,12 +617,78 @@ class TitlePageTests(TestCase):
         ]
         self.assertIsNone(fountain.parse_title_page(lines))
 
+class NoteTests(TestCase):
+    
+    def test_notes_are_filtered(self):
+        paras = parse([
+            'This is an action line.',
+            '',
+            '[[This is a note]]',
+            '',
+            'This is another action line.',
+        ])
+        self.assertEqual([Action, Action], [type(p) for p in paras])
+        self.assertEqual(
+            [plain('This is an action line.'), plain('This is another action line.')],
+            [p.lines[0] for p in paras]
+        )
+
+    def test_notes_are_not_read_across_lines(self):
+        paras = parse([
+            'This is an action [[line.',
+            '',
+            'This is not actually a note',
+            '',
+            'This is ]]another action line.',
+        ])
+        self.assertEqual([Action, Action, Action], [type(p) for p in paras])
+        self.assertEqual(
+            [plain('This is an action [[line.'), plain('This is not actually a note'), plain('This is ]]another action line.')],
+            [p.lines[0] for p in paras]
+        )
+
+    def test_notes_are_read_across_lines_with_spaces(self):
+        paras = parse([
+            'This is an action [[line.',
+            '  ',
+            'This is now a note',
+            '  ',
+            'This is ]]another action line.',
+        ])
+        self.assertEqual([Action], [type(p) for p in paras])
+        self.assertEqual(
+            [plain('This is an action another action line.')],
+            [p.lines[0] for p in paras]
+        )
+
 
 class PageBreakTests(TestCase):
-    def test_page_break_is_parsed(self):
+    @parameterized.expand([
+        param('==='),
+        param('===='),
+        param('=' * 432),
+    ])
+    def test_page_break_is_parsed(self, page_break):
         paras = parse([
-            '====',
+            page_break,
             '',
             'So here we go'
         ])
         self.assertEqual([PageBreak, Action], [type(p) for p in paras])
+
+    def test_page_break_is_not_parsed_if_not_alone(self):
+        paras = parse([
+            '===',
+            'This is not a page break',
+        ])
+        self.assertEqual([Action], [type(p) for p in paras])
+        self.assertEqual(plain('==='), paras[0].lines[0])
+
+    def test_must_be_three(self):
+        paras = parse([
+            '==',
+            '',
+            'This is not a page break',
+        ])
+        self.assertEqual([Action, Action], [type(p) for p in paras])
+        self.assertEqual(plain('=='), paras[0].lines[0])
