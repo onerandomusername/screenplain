@@ -4,10 +4,15 @@
 
 from xml.sax.saxutils import escape
 
-from screenplain.types import *
-from screenplain.richstring import RichString
 from screenplain.richstring import Bold, Italic, Underline
-
+from screenplain.types import (
+    Action,
+    Dialog,
+    DialogType,
+    DualDialog,
+    Slug,
+    Transition,
+)
 
 style_names = {
     Bold: 'Bold',
@@ -51,9 +56,11 @@ def write_paragraph(out, para_type, lines, centered=False):
 
 def write_dialog(out, dialog):
     write_paragraph(out, 'Character', [dialog.character])
-    for parenthetical, line in dialog.blocks:
-        if parenthetical:
+    for dialog_type, line in dialog.blocks:
+        if dialog_type is DialogType.PARENTHETICAL:
             write_paragraph(out, 'Parenthetical', [line])
+        elif dialog_type is DialogType.LYRIC:
+            write_paragraph(out, 'Lyric', [line])
         else:
             write_paragraph(out, 'Dialogue', [line])
 

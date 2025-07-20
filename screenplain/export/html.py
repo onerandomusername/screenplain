@@ -3,11 +3,21 @@
 # http://www.opensource.org/licenses/mit-license.php
 
 from __future__ import with_statement
+
 import os
 import os.path
 
-from screenplain.types import *
 from screenplain.richstring import plain
+from screenplain.types import (
+    Action,
+    Dialog,
+    DialogType,
+    DualDialog,
+    PageBreak,
+    Section,
+    Slug,
+    Transition,
+)
 
 
 class tag(object):
@@ -115,8 +125,12 @@ class Formatter(object):
         with self._tag('p', classes=['character']):
             self.out.write(to_html(dialog.character))
 
-        for parenthetical, text in dialog.blocks:
-            classes = ['parenthetical'] if parenthetical else None
+        for dialog_type, text in dialog.blocks:
+            classes = []
+            if dialog_type is DialogType.PARENTHETICAL:
+                classes.append('parenthetical')
+            elif dialog_type is DialogType.LYRIC:
+                classes.append('lyric')
             with self._tag('p', classes=classes):
                 self.out.write(to_html(text))
 

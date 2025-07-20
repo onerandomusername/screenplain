@@ -104,10 +104,10 @@ This is to ease with implementation and testing.
 - [x] DUAL DIALOGUE
   - [x] Dual, or simultaneous, dialogue is expressed by adding a caret ^ after the second Character element.
   - [x] Any number of spaces between the Character name and the caret are acceptable, and will be ignored. All that matters is that the caret is the last character on the line.
-- [ ] LYRICS
-  - [ ] Always forced
+- [x] LYRICS
+  - [x] Always forced
   - [ ] any line starting with `~`.
-  - [ ] Not specific on whether this can be dialogue only...
+  - [x] Not specific on whether this can be dialogue only...
     - [ ] implementing as if it must be dialogue.. For now.
 - [x] TRANSITIONS
   - [x] Uppercase
@@ -149,7 +149,7 @@ This is to ease with implementation and testing.
 
 - [x] A Character element can by forced by preceding it by an “at” symbol @.
 - [x] An Action element can by forced by preceding it by an exclamation point !.
-- [ ] Lyrics are designated by a preceding tilde ~ on each line.
+- [x] Lyrics are designated by a preceding tilde ~ on each line.
 - [x] “Character Extensions”–the parenthetical notations that follow a character name on the same line–are no longer required to be uppercase.
 - [ ] Two trailing spaces no longer forces an Action line.
 

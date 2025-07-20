@@ -136,6 +136,11 @@ margin-left: 1em;
 .dual .right p.character {
 padding-left: 6em;
 }
+
+div.dialog p.lyric,div.dual p.lyric {
+font-style: italic;
+}
+
 span.scnuml {
 display: block;
 float: left;

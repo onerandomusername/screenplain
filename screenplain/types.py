@@ -2,7 +2,16 @@
 # Licensed under the MIT license:
 # http://www.opensource.org/licenses/mit-license.php
 
+import enum
+
 from screenplain.richstring import parse_emphasis
+
+
+class DialogType(enum.Enum):
+    """Enumeration for dialog types."""
+    DEFAULT = enum.auto()
+    PARENTHETICAL = enum.auto()
+    LYRIC = enum.auto()
 
 
 class Screenplay(object):
@@ -92,22 +101,33 @@ class Section(object):
 class Dialog(object):
     def __init__(self, character, lines=None):
         self.character = character
-        self.blocks = []  # list of tuples of (is_parenthetical, text)
+        self.blocks = []  # list of tuples of (DialogType, text)
         if lines:
             self._parse(lines)
 
     def _parse(self, lines):
         inside_parenthesis = False
         for line in lines:
-            if line.startswith('('):
+            dialog_type = DialogType.DEFAULT
+            if line.startswith('(') or inside_parenthesis:
                 inside_parenthesis = True
-            self.blocks.append((inside_parenthesis, line))
+                dialog_type = DialogType.PARENTHETICAL
+            elif line.startswith('~'):
+                dialog_type = DialogType.LYRIC
+                line.segments[0].text = (
+                    line.segments[0].text.lstrip('~').strip()
+                )
+            self.blocks.append((dialog_type, line))
             if line.endswith(')'):
                 inside_parenthesis = False
 
     def add_line(self, line):
-        parenthetical = line.startswith('(')
-        self.blocks.append((parenthetical, line))
+        dialog_type = DialogType.DEFAULT
+        if line.startswith('('):
+            dialog_type = DialogType.PARENTHETICAL
+        elif line.startswith('~'):
+            dialog_type = DialogType.LYRIC
+        self.blocks.append((dialog_type, line))
 
 
 class DualDialog(object):

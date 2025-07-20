@@ -2,24 +2,24 @@
 # Licensed under the MIT license:
 # http://www.opensource.org/licenses/mit-license.php
 
-from screenplain import types
-from screenplain.types import (
-    Action, Dialog, DualDialog, Transition, Slug
-)
+import sys
+
+from reportlab import platypus
+from reportlab.lib import pagesizes
 from reportlab.lib.enums import TA_CENTER, TA_RIGHT
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import inch
-from reportlab import platypus
 from reportlab.platypus import (
     BaseDocTemplate,
-    Paragraph,
     Frame,
-    PageTemplate,
     NextPageTemplate,
+    PageTemplate,
+    Paragraph,
     Spacer,
 )
-from reportlab.lib import pagesizes
-import sys
+
+from screenplain import types
+from screenplain.types import Action, Dialog, DialogType, DualDialog, Slug, Transition
 
 try:
     import reportlab
@@ -131,6 +131,11 @@ class Settings:
             leftIndent=13 * self.character_width,
             keepWithNext=1,
         )
+        self.lyric_style = ParagraphStyle(
+            'lyric', default_style,
+            leftIndent=9 * self.character_width,
+            rightIndent=self.frame_width - (45 * self.character_width),
+        )
         self.action_style = ParagraphStyle(
             'action', default_style,
             spaceBefore=line_height,
@@ -230,10 +235,17 @@ def add_dialog(story, dialog, settings: Settings):
     story.append(
         Paragraph(dialog.character.to_html(), settings.character_style)
     )
-    for parenthetical, line in dialog.blocks:
-        if parenthetical:
+    for dialog_type, line in dialog.blocks:
+        if dialog_type is DialogType.PARENTHETICAL:
             story.append(
                 Paragraph(line.to_html(), settings.parenthentical_style)
+            )
+        elif dialog_type is DialogType.LYRIC:
+            story.append(
+                Paragraph(
+                    "<i>" + line.to_html() + "</i>",
+                    settings.lyric_style
+                )
             )
         else:
             story.append(

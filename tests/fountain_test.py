@@ -2,15 +2,23 @@
 # Licensed under the MIT license:
 # http://www.opensource.org/licenses/mit-license.php
 
+from io import StringIO
 from unittest import TestCase
-from parameterized import parameterized, param
+
+from parameterized import param, parameterized
 
 from screenplain.parsers import fountain
+from screenplain.richstring import italic, plain
 from screenplain.types import (
-    Slug, Action, Dialog, DualDialog, Transition, Section, PageBreak
+    Action,
+    Dialog,
+    DialogType,
+    DualDialog,
+    PageBreak,
+    Section,
+    Slug,
+    Transition,
 )
-from screenplain.richstring import plain, italic, empty_string
-from io import StringIO
 
 
 def parse(lines):
@@ -147,7 +155,6 @@ class SectionTests(TestCase):
             Section(plain(u'second level'), 2, None),
         ], paras)
 
-
     def test_indented_synopsis(self):
         paras = parse([
             '# first level',
@@ -156,6 +163,7 @@ class SectionTests(TestCase):
         self.assertEqual([
             Section(plain(u'first level'), 1, 'indented synopsis'),
         ], paras)
+
 
 class DialogTests(TestCase):
     # A Character element is any line entirely in caps, with one empty
@@ -230,11 +238,11 @@ class DialogTests(TestCase):
         dialog = paras[0]
         self.assertEqual(2, len(dialog.blocks))
         self.assertEqual(
-            (True, plain(parenthetical.lstrip())),
+            (DialogType.PARENTHETICAL, plain(parenthetical.lstrip())),
             dialog.blocks[0]
         )
         self.assertEqual(
-            (False, plain(dialogue.lstrip())),
+            (DialogType.DEFAULT, plain(dialogue.lstrip())),
             dialog.blocks[1]
         )
 
@@ -251,7 +259,7 @@ class DialogTests(TestCase):
         ])
         self.assertEqual([Dialog], [type(p) for p in paras])
         self.assertEqual(
-            [(False, plain('So we meet again.'))],
+            [(DialogType.DEFAULT, plain('So we meet again.'))],
             paras[0].blocks
         )
 
@@ -275,12 +283,12 @@ class DialogTests(TestCase):
         dual = paras[0]
         self.assertEqual(plain('BRICK'), dual.left.character)
         self.assertEqual(
-            [(False, plain('Fuck retirement.'))],
+            [(DialogType.DEFAULT, plain('Fuck retirement.'))],
             dual.left.blocks
         )
         self.assertEqual(plain(expected_character), dual.right.character)
         self.assertEqual(
-            [(False, plain('Fuck retirement!'))],
+            [(DialogType.DEFAULT, plain('Fuck retirement!'))],
             dual.right.blocks
         )
 
@@ -295,7 +303,7 @@ class DialogTests(TestCase):
         dialog = paras[1]
         self.assertEqual(plain('BRICK ^'), dialog.character)
         self.assertEqual([
-            (False, plain('Nice retirement.'))
+            (DialogType.DEFAULT, plain('Nice retirement.'))
         ], dialog.blocks)
 
     def test_leading_and_trailing_spaces_in_dialog(self):
@@ -308,10 +316,15 @@ class DialogTests(TestCase):
         ])
         self.assertEqual([Dialog], [type(p) for p in paras])
         self.assertEqual([
-            (False, plain(u'O Romeo, Romeo! wherefore art thou Romeo?')),
-            (False, plain(u'Deny thy father and refuse thy name;')),
-            (False, plain(u'Or, if thou wilt not, be but sworn my love,')),
-            (False, plain(u"And I'll no longer be a Capulet.")),
+            (DialogType.DEFAULT, plain(
+                'O Romeo, Romeo! wherefore art thou Romeo?'
+            )),
+            (DialogType.DEFAULT, plain('Deny thy father and refuse thy name;'
+                                       )),
+            (DialogType.DEFAULT, plain(
+                'Or, if thou wilt not, be but sworn my love,'
+            )),
+            (DialogType.DEFAULT, plain("And I'll no longer be a Capulet.")),
         ], paras[0].blocks)
 
     def test_two_space_blanks(self):
@@ -323,9 +336,49 @@ class DialogTests(TestCase):
         ])
         self.assertEqual([Dialog], [type(p) for p in paras])
         self.assertEqual(
-            [(False, plain('So we meet again.')), (False, plain('And it looks like you brought company.'))],
+            [
+                (DialogType.DEFAULT, plain('So we meet again.')),
+                (DialogType.DEFAULT, plain(
+                    'And it looks like you brought company.'
+                ))
+            ],
             paras[0].blocks
         )
+
+
+class LyricTests(TestCase):
+    def test_lyric_parsed_correctly(self):
+        paras = parse([
+            "CHARLIE",
+            '~ first line',
+            '~ second line',
+            'third line',
+        ])
+        self.assertEqual([Dialog], [type(p) for p in paras])
+        self.assertEqual(
+            [
+                (DialogType.LYRIC, plain('first line')),
+                (DialogType.LYRIC, plain('second line')),
+                (DialogType.DEFAULT, plain('third line'))
+            ],
+            paras[0].blocks
+        )
+
+    def test_lyric_with_leading_whitespace(self):
+        paras = parse([
+            "BOB",
+            '  ~ first line',
+            '  ~ second line',
+        ])
+        self.assertEqual([Dialog], [type(p) for p in paras])
+        self.assertEqual(
+            [
+                (DialogType.LYRIC, plain('first line')),
+                (DialogType.LYRIC, plain('second line'))
+            ],
+            paras[0].blocks
+        )
+
 
 class TransitionTests(TestCase):
 
@@ -617,8 +670,9 @@ class TitlePageTests(TestCase):
         ]
         self.assertIsNone(fountain.parse_title_page(lines))
 
+
 class NoteTests(TestCase):
-    
+
     def test_notes_are_filtered(self):
         paras = parse([
             'This is an action line.',
@@ -629,7 +683,10 @@ class NoteTests(TestCase):
         ])
         self.assertEqual([Action, Action], [type(p) for p in paras])
         self.assertEqual(
-            [plain('This is an action line.'), plain('This is another action line.')],
+            [
+                plain('This is an action line.'),
+                plain('This is another action line.')
+            ],
             [p.lines[0] for p in paras]
         )
 
@@ -643,7 +700,11 @@ class NoteTests(TestCase):
         ])
         self.assertEqual([Action, Action, Action], [type(p) for p in paras])
         self.assertEqual(
-            [plain('This is an action [[line.'), plain('This is not actually a note'), plain('This is ]]another action line.')],
+            [
+                plain('This is an action [[line.'),
+                plain('This is not actually a note'),
+                plain('This is ]]another action line.')
+            ],
             [p.lines[0] for p in paras]
         )
 
