@@ -102,11 +102,11 @@ class InputParagraph(object):
                 section = Section(_string_to_rich(text), len(hashes))
                 new_paragraphs.append(section)
             elif (
-                line.startswith('=') and
+                line.lstrip().startswith('=') and
                 new_paragraphs and
                 hasattr(new_paragraphs[-1], 'set_synopsis')
             ):
-                new_paragraphs[-1].set_synopsis(line[1:].lstrip())
+                new_paragraphs[-1].set_synopsis(line.lstrip()[1:].lstrip())
             else:
                 return False
 
@@ -192,11 +192,11 @@ class InputParagraph(object):
     def append_synopsis(self, paragraphs):
         if (
             len(self.lines) == 1 and
-            self.lines[0].startswith('=') and
+            self.lines[0].lstrip().startswith('=') and
             paragraphs and
             hasattr(paragraphs[-1], 'set_synopsis')
         ):
-            paragraphs[-1].set_synopsis(self.lines[0][1:].lstrip())
+            paragraphs[-1].set_synopsis(self.lines[0].lstrip()[1:].lstrip())
             return True
         else:
             return False
