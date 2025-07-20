@@ -6,7 +6,7 @@ import sys
 import os
 
 from reportlab import platypus
-from reportlab.lib import pagesizes
+from reportlab.lib import colors, pagesizes
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.lib.enums import TA_CENTER, TA_RIGHT
@@ -76,6 +76,9 @@ class Settings:
     centered_action_style: ParagraphStyle
     slug_style: ParagraphStyle
     transition_style: ParagraphStyle
+
+    # Dual dialog table style
+    dual_dialog_table_style: platypus.TableStyle
 
     # Title page styles
     title_style: ParagraphStyle
@@ -200,6 +203,15 @@ class Settings:
             'contact', default_style,
         )
 
+        self.dual_dialog_table_style = platypus.TableStyle([
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+            ('LEFTPADDING', (0, 0), (-1, -1), 0),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 0),
+            ('TOPPADDING', (0, 0), (-1, -1), 0),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 0),
+            ('LINEBEFORE', (1, 0), (1, 0), 0, colors.white),
+        ])
+
 
 class DocTemplate(BaseDocTemplate):
     def __init__(self, *args, **kwargs):
@@ -264,25 +276,75 @@ def add_slug(story, para, style, is_strong):
             html = line.to_html()
         story.append(Paragraph(html, style))
 
-
-def add_dialog(story, dialog, settings: Settings):
-    story.append(
-        Paragraph(dialog.character.to_html(), settings.character_style)
-    )
-    styles = {
-        DialogType.DEFAULT: settings.dialog_style,
-        DialogType.PARENTHETICAL: settings.parenthentical_style,
-        DialogType.LYRIC: settings.lyric_style,
-    }
+def _dialog_to_flowables(dialog, settings: Settings, column_width=None):
+    # If column_width is set, adjust indents proportionally
+    if column_width is not None:
+        proportion = column_width / settings.frame_width
+        character_left = int(settings.character_style.leftIndent * proportion)
+        dialog_left = int(settings.dialog_style.leftIndent * proportion)
+        parenthentical_left = int(settings.parenthentical_style.leftIndent *
+                                  proportion)
+        right_indent = int(settings.dialog_style.rightIndent * proportion)
+        character_style = ParagraphStyle(
+            'character-dual', settings.character_style,
+            leftIndent=character_left
+        )
+        dialog_style = ParagraphStyle(
+            'dialog-dual', settings.dialog_style,
+            leftIndent=dialog_left,
+            rightIndent=right_indent
+        )
+        parenthentical_style = ParagraphStyle(
+            'parenth-dual', settings.parenthentical_style,
+            leftIndent=parenthentical_left
+        )
+        lyric_style = ParagraphStyle(
+            'lyric-dual', settings.lyric_style,
+            leftIndent=dialog_left,
+            rightIndent=right_indent
+        )
+        styles = {
+            DialogType.DEFAULT: dialog_style,
+            DialogType.PARENTHETICAL: parenthentical_style,
+            DialogType.LYRIC: lyric_style,
+        }
+    else:
+        character_style = settings.character_style
+        styles = {
+            DialogType.DEFAULT: settings.dialog_style,
+            DialogType.PARENTHETICAL: settings.parenthentical_style,
+            DialogType.LYRIC: settings.lyric_style,
+        }
+    flowables = [Paragraph(dialog.character.to_html(), character_style)]
     for dialog_type, line in dialog.blocks:
         style = styles[dialog_type]
-        story.append(Paragraph(line.to_html(), style))
+        flowables.append(Paragraph(line.to_html(), style))
+    return flowables
 
+
+def add_dialog(story, dialog, settings: Settings):
+    flowables = _dialog_to_flowables(dialog, settings)
+    for flowable in flowables:
+        story.append(flowable)
 
 def add_dual_dialog(story, dual, settings: Settings):
-    # TODO: format dual dialog
-    add_dialog(story, dual.left, settings)
-    add_dialog(story, dual.right, settings)
+    # Add spacing before dual dialog
+    story.append(Spacer(settings.frame_width, settings.line_height))
+    # Format dual dialog side-by-side using a Table
+    col_width = settings.frame_width / 2
+    left_flowables = _dialog_to_flowables(dual.left,
+                                          settings, column_width=col_width)
+    right_flowables = _dialog_to_flowables(dual.right,
+                                           settings, column_width=col_width)
+    table_data = [
+        [left_flowables, right_flowables]
+    ]
+    table = platypus.Table(
+        table_data,
+        colWidths=[col_width, col_width],
+        style=settings.dual_dialog_table_style,
+    )
+    story.append(table)
 
 
 def get_title_page_story(screenplay, settings):
