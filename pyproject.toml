@@ -1,0 +1,33 @@
+
+[project]
+name = "screenplain"
+version = "0.11.1"
+description = "Convert text file to viewable screenplay."
+readme = { file = "README.md", content-type = "text/markdown" }
+authors = [{ name = "Martin Vilcans", email = "screenplain@librador.com" }]
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+]
+dependencies = []
+license = { file = "LICENSE.txt" }
+requires-python = ">=3.8"
+
+[project.urls]
+Homepage = "http://www.screenplain.com/"
+"Web Page" = "http://www.screenplain.com/"
+Source = "https://github.com/vilcans/screenplain"
+
+[project.optional-dependencies]
+PDF = ["reportlab"]
+
+[project.scripts]
+screenplain = "screenplain.main:cli"
+
+[dependency-groups]
+test = ["pytest", "pycodestyle"]
+
+[build-system]
+requires = ["flit_core>=3.2,<4"]
+build-backend = "flit_core.buildapi"
