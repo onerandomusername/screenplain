@@ -29,8 +29,8 @@ except ImportError:
 del reportlab
 
 
-def create_default_settings():
-    return Settings()
+def create_default_settings(**kwargs):
+    return Settings(**kwargs)
 
 
 class Settings:
@@ -53,6 +53,7 @@ class Settings:
     contact_style: ParagraphStyle
 
     font_size: int
+    font_family: str
     line_height: int
     character_width: float
     lines_per_page: int
@@ -74,10 +75,12 @@ class Settings:
         characters_per_line=61,
         page_size=pagesizes.letter,
         strong_slugs=False,
+        *, font_family="Courier"
     ):
         line_height = line_height or font_size
 
         self.font_size = font_size
+        self.font_family = font_family
         self.line_height = line_height
         # Courier pitch is 10 chars/inch
         self.character_width = 1.0 / 10 * inch
@@ -101,7 +104,7 @@ class Settings:
 
         default_style = ParagraphStyle(
             'default',
-            fontName='Courier',
+            fontName=font_family,
             fontSize=font_size,
             leading=line_height,
             spaceBefore=0,
@@ -201,7 +204,7 @@ class DocTemplate(BaseDocTemplate):
 
     def handle_pageBegin(self):
         self.canv.setFont(
-            'Courier', self.settings.font_size,
+            self.settings.font_family, self.settings.font_size,
             leading=self.settings.line_height
         )
         if self.has_title_page:

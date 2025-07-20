@@ -41,6 +41,16 @@ def main(args):
         )
     )
     parser.add_option(
+        '--font', dest='output_font',
+        metavar='FONT',
+        help=(
+            'Set the font to use for PDF output. ' +
+            'This is only used for PDF output, and can be any font ' +
+            'that is available to ReportLab. '
+        ),
+        default='CourierPrime'
+    )
+    parser.add_option(
         '--bare',
         action='store_true',
         dest='bare',
@@ -147,7 +157,7 @@ def main(args):
             )
         elif format == 'pdf':
             from screenplain.export import pdf
-            settings = pdf.create_default_settings()
+            settings = pdf.create_default_settings(font_family=options.output_font)
             settings.strong_slugs = options.strong
             pdf.to_pdf(screenplay, output, settings=settings)
     finally:
