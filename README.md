@@ -83,63 +83,63 @@ This is to ease with implementation and testing.
 
 #### Fountain v1.0
 
-- [ ] SCENE HEADINGS
-  - [ ] Scene headings with INT., EXT., I., or E.
-  - [ ] Scene headings forced with a single `.` followed by an alphanumeric character
+- [X] SCENE HEADINGS
+  - [X] Scene headings with INT., EXT., I., or E.
+  - [X] Scene headings forced with a single `.` followed by an alphanumeric character
 - [ ] ACTION
-  - [ ] All default text, that doesn't meet critera for ANY other element
-  - [ ] Forced with `!`
-  - [ ] leading spaces and tabs are preserved
+  - [x] All default text, that doesn't meet critera for ANY other element
+  - [x] Forced with `!`
+  - [x] leading spaces and tabs are preserved
   - [ ] Preserve vertical whitespace
-- [ ] CHARACTERS
-  - [ ] a line entirely in upperspace, with one empty line before, and no empty line after
-  - [ ] Can be indented, will be cut from output
-  - [ ] “Character Extensions”–the parenthetical notations that follow a character name on the same line–may be in uppercase or lowercase:
-  - [ ] must include one alphabetical character
-  - [ ] can be forced with preceding `@`
-- [ ] DIALOGUE
-  - [ ] any text immediately following a character OR parenthetical element
-- [ ] PARENTHETICALS
-  - [ ] Parentheticals follow a Character or Dialogue element, and are wrapped in parentheses ().
-- [ ] DUAL DIALOGUE
-  - [ ] Dual, or simultaneous, dialogue is expressed by adding a caret ^ after the second Character element.
-  - [ ] Any number of spaces between the Character name and the caret are acceptable, and will be ignored. All that matters is that the caret is the last character on the line.
+- [x] CHARACTERS
+  - [x] a line entirely in upperspace, with one empty line before, and no empty line after
+  - [x] Can be indented, will be cut from output
+  - [x] “Character Extensions”–the parenthetical notations that follow a character name on the same line–may be in uppercase or lowercase:
+  - [x] must include one alphabetical character
+  - [x] can be forced with preceding `@`
+- [X] DIALOGUE
+  - [X] any text immediately following a character OR parenthetical element
+- [X] PARENTHETICALS
+  - [X] Parentheticals follow a Character or Dialogue element, and are wrapped in parentheses ().
+- [x] DUAL DIALOGUE
+  - [x] Dual, or simultaneous, dialogue is expressed by adding a caret ^ after the second Character element.
+  - [x] Any number of spaces between the Character name and the caret are acceptable, and will be ignored. All that matters is that the caret is the last character on the line.
 - [ ] LYRICS
   - [ ] Always forced
   - [ ] any line starting with `~`.
   - [ ] Not specific on whether this can be dialogue only...
-- [ ] TRANSITIONS
-  - [ ] Uppercase
-  - [ ] Preceded by and followed by an empty line
-  - [ ] Ending in TO:
-  - [ ] forced with: `>`
+    - [ ] implementing as if it must be dialogue.. For now.
+- [x] TRANSITIONS
+  - [x] Uppercase
+  - [x] Preceded by and followed by an empty line
+  - [x] Ending in TO:
+  - [x] forced with: `>`
   - [ ] mustn't have trailing whitespace
-- [ ] CENTERED TEXT
-  - [ ] Action text, but centered
-  - [ ] forced with `>text<`.
-  - [ ] leading spaces NOT preserved
+- [x] CENTERED TEXT
+  - [x] Action text, but centered
+  - [x] forced with `>text<`.
+  - [x] leading spaces NOT preserved
 - [ ] EMPHASIS
   - [ ] <https://fountain.io/syntax/#emphasis>
-- [ ] TITLE PAGE
-  - [ ] The optional Title Page is always the first thing in a Fountain document. Information is encoding in the format key: value. Keys can have spaces (e. g. Draft date), but must end with a colon.
-  - [ ] basically, email header rules but with spaces in the key names too.
-- [ ] PAGE BREAKS
-  - [ ] `===`
+- [x] TITLE PAGE
+  - [x] The optional Title Page is always the first thing in a Fountain document. Information is encoding in the format key: value. Keys can have spaces (e. g. Draft date), but must end with a colon.
+  - [x] basically, email header rules but with spaces in the key names too.
+- [x] PAGE BREAKS
+  - [x] `===`
 - [ ] PUNCTUATION
-  - [ ] two spaces on a blank line continues the dialogue if it was preceeding.
+  - [x] two spaces on a blank line continues the dialogue if it was preceeding.
   - [ ] Leading tabs or spaces in elements other than Action will be ignored
-- [ ] NOTES
-  - [ ] Wrapped with `[[text]]`
-  - [ ] Notes can contain carriage returns, but if you wish a note to contain an empty line, you must place two spaces there to “connect” the element into one.
+- [x] NOTES
+  - [x] Wrapped with `[[text]]`
+  - [x] Notes can contain carriage returns, but if you wish a note to contain an empty line, you must place two spaces there to “connect” the element into one.
   - [ ] do not appear in formatted output
-- [ ] BONEYARD
-  - [ ] Comments. `/* */`
+- [x] BONEYARD
+  - [x] Comments. `/* */`
   - [ ] do not appear in formatted output
 - [ ] SECTIONS AND SYNOPSES
-  - [ ] Create a Section by preceding a line with one or more pound-sign # characters:
+  - [x] Create a Section by preceding a line with one or more pound-sign # characters:
   - [ ] do not appear in formatted output.
-    - [ ] optional support to include
-  - [ ] Synopses are single lines prefixed by an equals sign =. They can be located anywhere within the screenplay.
+  - [x] Synopses are single lines prefixed by an equals sign =. They can be located anywhere within the screenplay.
 - [ ] ERROR HANDLING
   - [ ] MOST IMPORTANT
   - [ ] Fountain does its best to sensibly interpret the text file into screenplay formatting. When in doubt, Fountain returns text as Action. Better to show the writer what they wrote–in the wrong format–than skip over malformed text.
@@ -147,10 +147,10 @@ This is to ease with implementation and testing.
 
 #### Fountain v1.1
 
-- [ ] A Character element can by forced by preceding it by an “at” symbol @.
-- [ ] An Action element can by forced by preceding it by an exclamation point !.
+- [x] A Character element can by forced by preceding it by an “at” symbol @.
+- [x] An Action element can by forced by preceding it by an exclamation point !.
 - [ ] Lyrics are designated by a preceding tilde ~ on each line.
-- [ ] “Character Extensions”–the parenthetical notations that follow a character name on the same line–are no longer required to be uppercase.
+- [x] “Character Extensions”–the parenthetical notations that follow a character name on the same line–are no longer required to be uppercase.
 - [ ] Two trailing spaces no longer forces an Action line.
 
 ## Future Plans
