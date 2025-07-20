@@ -25,9 +25,30 @@ PDF = ["reportlab"]
 [project.scripts]
 screenplain = "screenplain.main:cli"
 
-[dependency-groups]
-test = ["pytest", "pycodestyle"]
-
 [build-system]
 requires = ["flit_core>=3.2,<4"]
 build-backend = "flit_core.buildapi"
+
+[[tool.hatch.envs.hatch-test.matrix]]
+python = [
+    "3.13", 
+    "3.12", 
+    "3.11", 
+    "3.10", 
+    "3.9", 
+    "3.8",
+]
+
+[tool.hatch.envs.hatch-static-analysis]
+config-path = "none"
+dependencies = ["pydocstyle"]
+python = "3.13"
+
+[tool.hatch.envs.hatch-static-analysis.scripts]
+format-check = ""
+format-fix = ""
+lint-check = "pycodestyle --ignore=E402,W504 screenplain tests {args}"
+lint-fix = "lint-check"
+
+[tool.pytest.ini_options]
+addopts = "--doctest-modules -W error"
