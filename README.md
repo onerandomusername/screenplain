@@ -1,5 +1,4 @@
-About Screenplain
-=================
+# About Screenplain
 
 You're a hacker. The command line is your home. You know tools like grep, sed
 and Git inside out. You have formed a symbiotic relationship with your text
@@ -32,8 +31,7 @@ the master branch may not always work. I'm currently working on supporting
 the whole [Fountain](http://fountain.io) specification. (Fountain
 was previously known as "Screenplay Markdown" or "SPMD.")
 
-Installing
-==========
+## Installing
 
     pip install screenplain
 
@@ -41,8 +39,7 @@ To enable PDF output, install with the PDF extra (installs ReportLab):
 
     pip install 'screenplain[PDF]'
 
-Credits
-=======
+## Credits
 
 Screenplain was coded by [Martin Vilcans](http://www.librador.com).
 
@@ -54,25 +51,21 @@ The [Fountain](http://fountain.io) file format is the result of a
 collaboration between [Stu Maschwitz](http://prolost.com) and
 [John August](http://johnaugust.com/).
 
-
-License
-=======
+## License
 
 Screenplain is released under the [MIT license](http://www.opensource.org/licenses/mit-license.php).
 
-
-Developing
-==========
+## Developing
 
 Set up virtual environment:
 
     python3 -m venv .venv
     . .venv/bin/activate
-    pip install -r requirements.txt
-    pip install -e .
+    pip install -e .[PDF]
 
 After this, the `screenplain` command will use the working copy of your code.
 
 To run unit tests and style checks, run:
 
-    bin/test
+    hatch fmt
+    hatch test
