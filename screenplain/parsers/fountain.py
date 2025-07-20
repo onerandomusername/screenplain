@@ -34,7 +34,7 @@ centered_re = re.compile(r'\s*>\s*(.*?)\s*<\s*$')
 slug_re = re.compile(r'(?:(\.)(?=[^.])\s*)?(\S.*?)\s*$')
 scene_number_re = re.compile(r'(.*?)\s*(?:#([\w\-.]+)#)\s*$')
 section_re = re.compile(r'^(#{1,6})\s*([^#].*)$')
-transition_re = re.compile(r'(>?)\s*(.+?)(TO:)?$')
+transition_re = re.compile(r'[ \t]*(>?)\s*(.+?)(TO:)?$')
 page_break_re = re.compile(r'^={3,}$')
 note_re = re.compile(r'\[\[.*?\]\]', re.DOTALL)
 
@@ -134,8 +134,8 @@ class InputParagraph(object):
         character = self.lines[0]
         if character.endswith(TWOSPACE):
             return False
-        if character.startswith('@') and len(character) >= 2:
-            character = character[1:]
+        if character.lstrip().startswith('@') and len(character) >= 2:
+            character = character.lstrip()[1:]
         elif not character_re.match(character):
             return False
 
